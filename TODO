@@ -1,6 +1,5 @@
 * Still missing:
     - startup
-    - event polling
     - imagecapture
     - onwindowcreate
     - removecallback
