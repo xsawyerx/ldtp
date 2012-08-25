@@ -81,9 +81,23 @@ sub deregisterevent {
     $self->_try( 'deregisterevent', $event_name );
 }
 
-sub registerkbevent {}
+sub registerkbevent {
+    my $self = shift;
+    my ( $keys, $modifiers, $fnname, @args ) = @_;
 
-sub deregisterkbevent {}
+    my $event_name = "kbevent$keys$modifiers";
+    $self->poll_events->{$event_name} = [ $fnname, \@args ];
+    $self->_try( 'registerkbevent', $event_name );
+}
+
+sub deregisterkbevent {
+    my $self = shift;
+    my ( $keys, $modifiers ) = @_;
+
+    my $event_name = "kbevent$keys$modifiers";
+    delete $self->poll_events->{$event_name};
+    $self->_try( 'deregisterkbevent', $event_name );
+}
 
 sub launchapp {
     my $self = shift;
