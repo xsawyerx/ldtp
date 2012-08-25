@@ -2,11 +2,17 @@ package LDTP;
 # ABSTRACT: Perl interface to LDTP (Linux Desktop Testing Project)
 
 use Moo;
-use MooX::Types::MooseLike::Base qw<Bool>;
+use MooX::Types::MooseLike::Base qw<Bool HashRef>;
 
 use LDTP::Window;
 
 with 'LDTP::Role::RPCHandler';
+
+has poll_events => (
+    is      => 'ro',
+    isa     => HashRef,
+    default => sub { {} },
+);
 
 has windows_env => (
     is      => 'ro',
@@ -59,9 +65,21 @@ sub getwindowlist {
     $self->_try('getwindowlist');
 }
 
-sub registerevent {}
+sub registerevent {
+    my $self = shift;
+    my ( $event_name, $fnname, @args ) = @_;
 
-sub deregisterevent {}
+    $self->poll_events->{$event_name} = [ $fnname, \@args ];
+    $self->_try( 'registerevent', $event_name );
+}
+
+sub deregisterevent {
+    my $self       = shift;
+    my $event_name = shift;
+
+    delete $self->poll_events->{$event_name};
+    $self->_try( 'deregisterevent', $event_name );
+}
 
 sub registerkbevent {}
 
