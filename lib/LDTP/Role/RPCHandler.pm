@@ -42,7 +42,7 @@ sub _try {
     $response->$_isa('RPC::XML::fault')
         and die "Error in '$action': %s\n", $response->string;
 
-    return $response;
+    return $response->value;
 }
 
 1;
