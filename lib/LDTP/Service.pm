@@ -25,6 +25,10 @@ has app => (
     is => 'rw',
 );
 
+has pid => (
+    is => 'rw',
+);
+
 sub _build_windows_env {
     my $self = shift;
 
@@ -51,15 +55,26 @@ sub start {
 
     defined $pid or croak "Error starting LDTP app ($bin): $!";
 
+    # close the child
+    $pid == 0 and exit;
+
     $self->app($app);
+    $self->pid($pid);
 
     return 1;
 }
 
 sub stop {
     my $self = shift;
+    my $pid  = $self->pid or return 0;
     my $app  = $self->app or return 0;
-    close $app or die "Can't close app: $!\n";
+
+    # we gots to kill the app and close the socket
+    kill 'KILL', $pid;
+    close $app;
+
+    # return an indication of whether it worked or not
+    return kill 0, $pid ? 0 : 1;
 }
 
 sub isalive {
