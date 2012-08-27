@@ -64,8 +64,7 @@ sub stop {
 
 sub isalive {
     my $self = shift;
-    my $res  = $self->_try('isalive');
-    use DDP; p $res;
+    return $self->_try('isalive');
 }
 
 1;
