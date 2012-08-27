@@ -31,6 +31,7 @@ sub _build_windows_env {
     # now check the the host OS
     $^O =~ /win|mingw/i and return 1;
 
+    # when all else fails, we assume we're not on Windows
     return 0;
 }
 
