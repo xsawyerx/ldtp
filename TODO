@@ -1,12 +1,8 @@
 * Still missing:
-    - startup
     - imagecapture
     - onwindowcreate
     - removecallback
     - method_missing
-
-* Not sure if I want to run ldtp from the module. It's pretty ugly and
-probably not very portable.
 
 * Gotta write some tests.
 

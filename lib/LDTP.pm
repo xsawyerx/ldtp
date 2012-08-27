@@ -2,9 +2,10 @@ package LDTP;
 # ABSTRACT: Perl interface to LDTP (Linux Desktop Testing Project)
 
 use Moo;
-use MooX::Types::MooseLike::Base qw<Bool HashRef>;
+use MooX::Types::MooseLike::Base qw<HashRef Object>;
 
 use LDTP::Window;
+use LDTP::Service;
 
 with 'LDTP::Role::RPCHandler';
 
@@ -14,25 +15,17 @@ has poll_events => (
     default => sub { {} },
 );
 
-has windows_env => (
+# we provide a single service and keep track of it
+has service => (
     is      => 'ro',
-    isa     => Bool,
+    isa     => Object,
     lazy    => 1,
     builder => 1,
 );
 
-sub _build_windows_env {
+sub _build_service {
     my $self = shift;
-
-    # first check %ENV
-    $ENV{'LDTP_WINDOWS'} and return 1;
-    $ENV{'LDTP_LINUX'}   and return 0;
-
-    # now check the the host OS
-    $^O =~ /win|mingw/i and return 1;
-
-    # when all else fails, we assume we're not on Windows
-    return 0;
+    return LDTP::Service->new( client => $self->client );
 }
 
 sub window {
