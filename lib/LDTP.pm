@@ -3,6 +3,9 @@ package LDTP;
 
 use Moo;
 use MooX::Types::MooseLike::Base qw<HashRef Object>;
+use Carp;
+use File::Temp;
+use MIME::Base64;
 
 use LDTP::Window;
 use LDTP::Service;
@@ -145,21 +148,18 @@ sub startprocessmonitor {
 sub stopprocessmonitor {
     my $self         = shift;
     my $process_name = shift;
-
     $self->_try( 'stopprocessmonitor', $process_name );
 }
 
 sub keypress {
     my $self = shift;
     my $data = shift;
-
     $self->_try( 'keypress', $data );
 }
 
 sub keyrelease {
     my $self = shift;
     my $data = shift;
-
     $self->_try( 'keyrelease', $data );
 }
 
@@ -210,10 +210,59 @@ sub delaycmdexec {
     $self->_try( 'delaycmdexec', $delay );
 }
 
-sub imagecapture {}
-sub onwindowcreate {}
-sub removecallback {}
-sub method_missing {}
+sub onwindowcreate {
+    my $self = shift;
+    my ( $window_name, $fnname, @args ) = @_;
+    $self->poll_events->{$window_name} = [ $fnname, \@args ];
+    # FIXME: implement
+}
+
+sub removecallback {
+    my $self = shift;
+    my ( $window_name, $fnname ) = @_;
+    delete $self->poll_events->{$window_name};
+    # FIXME: implement
+}
+
+sub method_missing {
+    my $self = shift;
+    my ( $window_name, $sym, $args, $block ) = @_;
+    # FIXME: implement
+}
+
+sub imagecapture {
+    my $self   = shift;
+    my $params = shift;
+    my %opts   = (
+        window_name => '',
+        out_file    => '',
+        x           => 0,
+        y           => 0,
+        width       => -1,
+        height      => -1,
+        @_,
+    );
+
+    my $res = $self->_try(
+        'imagecapture',
+        $opts{'window_name'},
+        $opts{'x'},     $opts{'y'},
+        $opts{'width'}, $opts{'height'},
+    );
+
+    my ( $filename, $fh );
+
+    if ( $opts{'out_file'} ne '' ) {
+        $filename = $opts{'out_file'};
+        open $fh, '>', $filename or croak "Can't open '$filename': $!";
+    } else {
+        ( $filename, $fh ) = tempfile();
+    }
+
+    print {$fh} decode_base64($res);
+    close $fh or croak "Can't close '$filename': $!";
+    return $filename;
+}
 
 1;
 
